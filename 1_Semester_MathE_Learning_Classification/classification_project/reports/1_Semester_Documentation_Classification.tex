@@ -1,0 +1,236 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{lmodern}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+
+
+
+% Seitenränder
+\geometry{top=3cm, bottom=3cm, left=3cm, right=3cm}
+
+% Schriftart und Zeilenabstand
+\renewcommand{\baselinestretch}{1.5}
+
+% Begin des Dokuments
+\begin{document}
+
+% Keine Seitenzahlen auf dem Deckblatt
+\pagenumbering{gobble}
+
+% Logo der Fachhochschule (optional)
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.25\textwidth]{FHGR.jpeg} % Logo-Pfad anpassen
+\end{figure}
+
+\vspace{2cm}
+
+% Titel der Arbeit
+\begin{center}
+    {\Huge \textbf{Effiziente Klassifikation: Methoden und Ergebnisse}} \\[1.5em]
+    {\Large \textit{Ein datenwissenschaftliches Projekt zur Typisierung von Antworten}} \\
+    \vspace{2cm}
+    
+    \textbf{Erstellt von:} \\[0.5em]
+    {\Large Frédéric C. Kurbel, Abdul J. Safi} \\[1.0em]
+    
+    \textbf{Studiengang:} Computational and Data Science \\[0.5em]
+    \textbf{Modul:} Einführung in Data Science \\[0.5em]
+    \textbf{Professor:} Corsin Capol \\[2.0em]
+    
+    \textbf{Abgabedatum:} 12.12.2024
+\end{center}
+
+\vfill
+
+% Fußzeile
+\begin{center}
+    \rule{0.8\textwidth}{0.5pt} \\[0.5em]
+    \textbf{Fachhochschule Graubünden}
+\end{center}
+\newpage
+
+
+\renewcommand{\contentsname}{Inhaltsverzeichnis}
+\tableofcontents
+
+\newpage
+\pagenumbering{arabic} % Startet Seitenzahlen ab 1
+
+
+\section{Einleitung}
+Dieses Projekt untersucht die Klassifikation von Antworttypen basierend auf einem gegebenen Datensatz. Der Workflow umfasst die Datenvorverarbeitung, Feature-Auswahl, den Einsatz verschiedener Klassifikationsmodelle sowie die Optimierung der Modellleistung. Im Mittelpunkt steht der Vergleich der Ergebnisse von Random Forest, XGBoost, LightGBM und logistischer Regression, unter Anwendung von Techniken wie Hyperparameter-Optimierung und SMOTE.
+
+\noindent
+Der vollständige Quellcode sowie eine detaillierte Dokumentation des Projekts sind im zugehörigen GitHub-Repository verfügbar: 
+
+\begin{center}
+    \href{https://github.com/Fredeys/1_Semester_MathE_Learning_Classification}{\texttt{https://github.com/Fredeys/1\_Semester\_MathE\_Learning\_Classification}}
+\end{center}
+
+
+\section{Datenbeschreibung}
+Der verwendete Datensatz stammt aus dem \textit{UCI Machine Learning Repository} und trägt den Titel \textbf{Dataset for Assessing Mathematics Learning in Higher Education}. Er wurde im Rahmen des \textit{MathE-Projekts} entwickelt und umfasst \textbf{9.546 Antworten} zu mathematischen Themen, die in der Hochschulbildung gelehrt werden. Die Daten wurden zwischen Februar 2019 und Dezember 2023 gesammelt.
+
+\subsection{Spaltenbeschreibung und Datentypen}
+\begin{itemize}
+    \item \textbf{Student ID (int64):} Eindeutige ID für jeden Studenten.
+    \item \textbf{Student Country (object):} Herkunftsland der Studenten.
+    \item \textbf{Question ID (int64):} Eindeutige ID für jede Frage.
+    \item \textbf{Type of Answer (int64):} Klassifikationsziel – korrekt oder inkorrekt.
+    \item \textbf{Question Level (object):} Schwierigkeitsgrad der Frage – \textit{basic} oder \textit{advanced}.
+    \item \textbf{Topic (object):} Übergeordnetes mathematisches Thema.
+    \item \textbf{Subtopic (object):} Spezifisches Unterthema.
+    \item \textbf{Keywords (object):} Schlüsselwörter, die mit der Frage verbunden sind.
+\end{itemize}
+
+\subsection{Fehlende Werte}
+Es wurden keine fehlenden Werte in den Spalten festgestellt.
+
+\subsection{Besonderheiten des Datensatzes}
+\begin{itemize}
+    \item Die Spalten \textit{Student Country}, \textit{Question Level}, \textit{Topic}, \textit{Subtopic} und \textit{Keywords} enthalten kategorische Werte, die numerisch konvertiert werden mussten.
+    \item Der ursprüngliche Datensatz enthielt \textbf{2.083 doppelte Zeilen}, die nicht vor der Modellierung entfernt wurden, da sonst ein erheblicher Anteil der Daten verloren geht.
+\end{itemize}
+
+\subsection{Verfügbarkeit}
+Weitere Informationen und der ursprüngliche Datensatz sind öffentlich im \textit{UCI Machine Learning Repository} verfügbar:  
+\url{https://archive.ics.uci.edu/dataset/1031/dataset+for+assessing+mathematics+learning+in+higher+education}.  
+Der verarbeitete Datensatz \texttt{processed\_dataset.csv} wurde für diese Arbeit genutzt und ist bereit für maschinelle Lernverfahren.
+
+
+
+\section{Methodik}
+
+\subsection{Modellierung und Optimierung von Klassifikatoren}
+
+\subsubsection{Vorbereitung der Daten}
+\begin{itemize}
+    \item \textbf{Datensatz:} Der Datensatz \texttt{MathE dataset.csv} enthielt 9.546 Einträge mit 8 Spalten, die durch Bag-of-Words-Transformation auf 226 erweitert wurden.
+    \item \textbf{Kombination der Spalten \textit{Subtopic} und \textit{Keywords}:} Die Textfelder wurden kombiniert, um eine umfassendere Darstellung der Textdaten zu gewährleisten.
+    \item \textbf{Bag-of-Words-Methode:} Die kombinierten Textdaten wurden numerisch repräsentiert, was zu einer erheblichen Erhöhung der Dimensionalität führte.
+    \item \textbf{Kodierung:} Kategorische Variablen (\textit{Student Country}, \textit{Question Level}, \textit{Topic}) wurden numerisch kodiert.
+    \item \textbf{Datenaufteilung:} 80\% der Daten wurden für das Training und 20\% für Tests verwendet.
+\end{itemize}
+
+\subsubsection{Modellvergleich und Optimierung}
+
+\paragraph{Random Forest}
+\begin{itemize}
+    \item \textbf{Baseline-Modell:} Erste Trainingsgenauigkeit von \textbf{59.3\%}.
+    \item \textbf{Hyperparameter-Tuning mit GridSearchCV:}
+    \begin{itemize}
+        \item Beste Parameter:
+        \begin{itemize}
+            \item \textit{max\_depth}: None
+            \item \textit{min\_samples\_leaf}: 2
+            \item \textit{min\_samples\_split}: 10
+            \item \textit{n\_estimators}: 100
+        \end{itemize}
+        \item Bestes F1-Score (Macro): \textbf{0.6129}.
+    \end{itemize}
+    \item \textbf{Optimiertes Modell:} Nach Training mit optimierten Parametern erzielte der Random Forest eine Genauigkeit von \textbf{61.6\%}.
+\end{itemize}
+
+\paragraph{Logistische Regression}
+\begin{itemize}
+    \item \textbf{Baseline-Modell:} Trainingsgenauigkeit von \textbf{54.8\%}.
+    \item \textbf{Optimierungen:}
+    \begin{itemize}
+        \item \textit{Feature-Skalierung}: Standardisierung der Features.
+        \item \textit{SMOTE}: Balancierung der Klassenverteilung.
+        \item \textit{Klassen-Gewichtung}: Berücksichtigung ungleicher Klassenhäufigkeiten.
+    \end{itemize}
+    \item \textbf{Ergebnisse:} Optimierte Genauigkeit von \textbf{54.8\%} mit verbessertem Recall für unterrepräsentierte Klassen.
+\end{itemize}
+
+\paragraph{XGBoost}
+\begin{itemize}
+    \item \textbf{Baseline-Modell:} Erste Genauigkeit von \textbf{64.5\%}.
+    \item \textbf{Optimierungen:}
+    \begin{itemize}
+        \item \textit{Randomized Search}: Beste Parameter:
+        \begin{itemize}
+            \item \textit{subsample}: 1.0
+            \item \textit{n\_estimators}: 200
+            \item \textit{max\_depth}: 5
+            \item \textit{learning\_rate}: 0.2
+            \item \textit{colsample\_bytree}: 0.6
+        \end{itemize}
+        \item \textit{Feature-Reduktion}: Auswahl der wichtigsten Features.
+        \item \textit{SMOTE}: Verbesserung der Klassenbalance.
+        \item \textit{Kombinierte Optimierungen}: Klassen-Gewichtung und Feature-Reduktion.
+    \end{itemize}
+    \item \textbf{Ergebnisse:} Genauigkeit von \textbf{65.7\%} nach kombinierten Optimierungen.
+\end{itemize}
+
+\paragraph{LightGBM}
+\begin{itemize}
+    \item \textbf{Baseline-Modell:} Erste Genauigkeit von \textbf{64.0\%}.
+    \item \textbf{Optimierungen:}
+    \begin{itemize}
+        \item \textit{Hyperparameter-Tuning mit GridSearchCV}: 
+        \begin{itemize}
+            \item Beste Parameter:
+            \begin{itemize}
+                \item \textit{learning\_rate}: 0.1
+                \item \textit{min\_child\_samples}: 50
+                \item \textit{n\_estimators}: 200
+                \item \textit{num\_leaves}: 50
+            \end{itemize}
+        \end{itemize}
+        \item \textit{Feature-Reduktion}: Schwellenwert von 8 für Feature-Importances führte zu 45 relevanten Features.
+    \end{itemize}
+    \newpage
+    \item \textbf{Ergebnisse:}
+    \begin{itemize}
+        \item Optimierte Genauigkeit mit allen Features: \textbf{64.0\%}.
+        \item Genauigkeit nach Feature-Reduktion: \textbf{65.0\%}.
+        \item Durchschnittliche Genauigkeit aus 5-facher Kreuzvalidierung: \textbf{57.0\%}.
+    \end{itemize}
+\end{itemize}
+
+
+\subsection{Ergebnisse und Erkenntnisse}
+\begin{itemize}
+    \item \textbf{Beste Leistung:} XGBoost und LightGBM erreichten die höchste Genauigkeit (\textbf{65.7\%} und \textbf{65.0\%}).
+    \item \textbf{Feature-Engineering:} Die Reduktion der Features führte zu stabileren und besseren Ergebnissen, insbesondere bei LightGBM und XGBoost.
+    \item \textbf{Datenbalancierung:} SMOTE verbesserte Recall und F1-Score für unterrepräsentierte Klassen, jedoch teilweise auf Kosten der Gesamtgenauigkeit.
+    \item \textbf{Hyperparameter-Tuning:} Besonders effektiv bei XGBoost und LightGBM, da eine präzise Feinabstimmung der Modelle möglich war.
+\end{itemize}
+
+
+\subsection{Zusammenfassung}
+Die beste Modellleistung wurde mit dem \textbf{XGBoost-Klassifikator} erreicht, der durch eine Kombination aus \textbf{Feature-Auswahl}, \textbf{Datenbalance} und \textbf{Hyperparameter-Tuning} optimiert wurde. Diese Techniken haben entscheidend dazu beigetragen, eine hohe Genauigkeit zu erzielen, während die Balance zwischen \textbf{Präzision} und \textbf{Generalisierbarkeit} gewahrt blieb.
+
+\section{Fazit}
+Dieses Projekt zeigt deutlich, dass \textbf{Datenvorbereitung}, \textbf{Feature-Auswahl} und \textbf{Modelloptimierung} entscheidende Schritte sind, um die Leistung von Klassifikationsmodellen nachhaltig zu verbessern. Die Ergebnisse unterstreichen, dass unterschiedliche Algorithmen spezifische Stärken in Bezug auf verschiedene Datenstrukturen aufweisen, was die Relevanz einer modellabhängigen Strategie hervorhebt.
+
+\noindent
+Besonders der \textbf{XGBoost-Klassifikator} hat sich als robust und effizient erwiesen. Durch die Kombination mit Techniken wie \textbf{SMOTE} zur Datenbalance und einer gezielten Hyperparameter-Optimierung konnte sowohl die Vorhersagequalität als auch die Stabilität des Modells gesteigert werden.
+
+\subsection*{Ausblick}
+Um die Ergebnisse weiter zu verbessern und die Übertragbarkeit der Modelle zu prüfen, bieten sich folgende Ansätze an:
+\begin{itemize}
+    \item \textbf{Integration zusätzlicher Merkmale:} Die Aufnahme weiterer relevanter Features könnte zusätzliche Informationen liefern und die Modellgenauigkeit erhöhen.
+    \item \textbf{Erweiterung der Algorithmenvielfalt:} Die Evaluierung alternativer Methoden wie neuronaler Netze oder Ensemble-Ansätze kann neue Erkenntnisse und potenzielle Leistungssteigerungen ermöglichen.
+    \item \textbf{Transferierbarkeit und Generalisierbarkeit:} Die Validierung der Modelle auf externen Datensätzen würde ihre Anwendbarkeit auf andere Domänen überprüfen und die Robustheit erhöhen.
+    \item \textbf{Automatisierung des Optimierungsprozesses:} Der Einsatz von AutoML-Frameworks könnte die Effizienz und Genauigkeit durch automatisierte Optimierungsschritte weiter steigern.
+\end{itemize}
+
+\newpage
+
+\renewcommand{\refname}{Quellenverzeichnis} % Titel des Quellenverzeichnisses
+\bibliographystyle{plain} % Stil des Quellenverzeichnisses
+\addcontentsline{toc}{section}{Quellenverzeichnis} % Fügt das Quellenverzeichnis ins Inhaltsverzeichnis ein
+\nocite{*} % Zeige alle Einträge der .bib-Datei an
+\bibliography{bibliography} % Verweise auf deine .bib-Datei (ohne .bib-Erweiterung)
+
+\end{document}
+
