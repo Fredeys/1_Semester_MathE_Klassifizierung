@@ -1,7 +1,7 @@
 # Klassifikation: Methoden und Ergebnisse
 
 ## 📄 Projektübersicht
-Dieses Projekt untersucht die Klassifikation von mathematischen Antworttypen mithilfe moderner maschineller Lernmodelle. Ziel ist es, die Leistung verschiedener Klassifikatoren wie **Random Forest**, **Logistische Regression**, **XGBoost** und **LightGBM** zu vergleichen und durch Techniken wie **Feature-Auswahl**, **Datenbalancierung (SMOTE)** und **Hyperparameter-Tuning** zu optimieren.  
+Dieses Projekt untersucht die Klassifikation von Antworttypen mithilfe moderner maschineller Lernmodelle. Ziel ist es, die Leistung verschiedener Klassifikatoren wie **Random Forest**, **Logistische Regression**, **XGBoost** und **LightGBM** zu vergleichen und durch Techniken wie **Feature-Auswahl**, **Datenbalancierung (SMOTE)** und **Hyperparameter-Tuning** zu optimieren.  
 
 Der Workflow umfasst:
 - Datenvorbereitung
